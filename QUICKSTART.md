@@ -37,7 +37,7 @@ chmod +x deploy-all.sh
 
 ### Step 2: Deploy Lambda Power Tuning
 
-1. Go to the [AWS Serverless Application Repository](https://serverlessrepo.aws.amazon.com/applications/arn:aws:serverlessrepo:us-east-1:451282441545:applications~aws-lambda-power-tuning)
+1. Go to the [AWS Serverless Application Repository](https://serverlessrepo.aws.amazon.com/applications/arn:aws:serverlessrepo:REGION:ACCOUNT:applications~aws-lambda-power-tuning)
 2. Click **Deploy**
 3. Accept default settings and deploy the application
 4. Note the State Machine ARN from the outputs

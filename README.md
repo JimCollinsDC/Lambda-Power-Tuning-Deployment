@@ -1,3 +1,6 @@
+# [![Repo](https://img.shields.io/badge/repo-JimCollinsDC/Lambda--Power--Tuning--Deployment-blue)](https://github.com/JimCollinsDC/Lambda-Power-Tuning-Deployment)
+
+# Lambda Power Tuning Deployment
 # AWS Lambda Power Tuning Demo
 
 This repository contains sample Lambda functions designed to demonstrate AWS Lambda Power Tuning with both **x86_64** and **ARM64 (Graviton2)** architectures.
@@ -69,7 +72,7 @@ Each function includes:
 ## Power Tuning
 
 Use the AWS Lambda Power Tuning tool to analyze each function:
-https://serverlessrepo.aws.amazon.com/applications/arn:aws:serverlessrepo:us-east-1:451282441545:applications~aws-lambda-power-tuning
+https://serverlessrepo.aws.amazon.com/applications/arn:aws:serverlessrepo:REGION:ACCOUNT:applications~aws-lambda-power-tuning
 
 ### Architecture Comparison
 
