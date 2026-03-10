@@ -1,0 +1,10 @@
+{
+  "lambdaARN": "REPLACE_WITH_YOUR_FUNCTION_ARN",
+  "powerValues": [128, 256, 512, 1024, 1536, 2048],
+  "num": 10,
+  "payload": {
+    "num_requests": 10
+  },
+  "parallelInvocation": true,
+  "strategy": "cost"
+}

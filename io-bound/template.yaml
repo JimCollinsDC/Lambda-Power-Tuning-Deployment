@@ -1,0 +1,29 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: I/O-Bound Lambda Function for Power Tuning Demo
+
+Resources:
+  IOBoundFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: power-tuning-demo-io-bound
+      Handler: lambda_function.lambda_handler
+      Runtime: python3.11
+      CodeUri: .
+      Description: I/O-bound function for Lambda Power Tuning demonstration
+      MemorySize: 512
+      Timeout: 60
+      Environment:
+        Variables:
+          FUNCTION_TYPE: io-bound
+      Tags:
+        Purpose: PowerTuningDemo
+        WorkloadType: IO
+
+Outputs:
+  FunctionArn:
+    Description: ARN of the I/O-bound Lambda function
+    Value: !GetAtt IOBoundFunction.Arn
+  FunctionName:
+    Description: Name of the I/O-bound Lambda function
+    Value: !Ref IOBoundFunction

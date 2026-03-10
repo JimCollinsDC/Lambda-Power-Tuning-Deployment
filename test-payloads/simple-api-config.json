@@ -1,0 +1,11 @@
+{
+  "lambdaARN": "REPLACE_WITH_YOUR_FUNCTION_ARN",
+  "powerValues": [128, 256, 512, 1024],
+  "num": 10,
+  "payload": {
+    "httpMethod": "GET",
+    "path": "/health"
+  },
+  "parallelInvocation": true,
+  "strategy": "cost"
+}

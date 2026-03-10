@@ -1,0 +1,11 @@
+{
+  "lambdaARN": "REPLACE_WITH_YOUR_FUNCTION_ARN",
+  "powerValues": [128, 256, 512, 1024, 1536, 2048, 3008],
+  "num": 10,
+  "payload": {
+    "fibonacci": 35,
+    "prime_limit": 10000
+  },
+  "parallelInvocation": true,
+  "strategy": "balanced"
+}

@@ -1,0 +1,11 @@
+{
+  "lambdaARN": "REPLACE_WITH_YOUR_FUNCTION_ARN",
+  "powerValues": [512, 1024, 1536, 1769, 2048, 2560, 3008, 3537, 4096],
+  "num": 10,
+  "payload": {
+    "num_requests": 15,
+    "max_workers": 10
+  },
+  "parallelInvocation": true,
+  "strategy": "balanced"
+}

@@ -1,0 +1,154 @@
+# Deploy All Lambda Functions for Power Tuning Demo
+# Usage: .\deploy-all.ps1 [-Profile "default"] [-Region "us-east-1"] [-ArchitectureType "both"]
+
+param(
+    [string]$Profile = "default",
+    [string]$Region = "us-east-1",
+    [ValidateSet("x86", "arm64", "both")]
+    [string]$ArchitectureType = "both"
+)
+
+Write-Host "==========================================" -ForegroundColor Cyan
+Write-Host "Deploying Lambda Power Tuning Demo Functions" -ForegroundColor Cyan
+Write-Host "AWS Profile: $Profile" -ForegroundColor Yellow
+Write-Host "AWS Region: $Region" -ForegroundColor Yellow
+Write-Host "Architecture: $ArchitectureType" -ForegroundColor Yellow
+Write-Host "==========================================" -ForegroundColor Cyan
+
+# Check for required tools
+Write-Host "" 
+Write-Host "Checking prerequisites..." -ForegroundColor Yellow
+
+# Check for AWS CLI
+if (-not (Get-Command aws -ErrorAction SilentlyContinue)) {
+    Write-Host "ERROR: AWS CLI is not installed or not in PATH" -ForegroundColor Red
+    Write-Host "Install from: https://aws.amazon.com/cli/" -ForegroundColor Yellow
+    exit 1
+}
+
+# Check for SAM CLI
+$samAvailable = $false
+if (Get-Command sam -ErrorAction SilentlyContinue) {
+    Write-Host "SAM CLI found: $(sam --version)" -ForegroundColor Green
+    $samAvailable = $true
+}
+elseif (Get-Command python -ErrorAction SilentlyContinue) {
+    $samVersion = python -m samcli --version 2>&1
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "SAM CLI found (via Python): $samVersion" -ForegroundColor Green
+        $samAvailable = $true
+    }
+}
+
+if (-not $samAvailable) {
+    Write-Host "ERROR: AWS SAM CLI is not installed" -ForegroundColor Red
+    Write-Host ""
+    Write-Host "Install AWS SAM CLI using one of these methods:" -ForegroundColor Yellow
+    Write-Host "  1. Using pip: pip install aws-sam-cli" -ForegroundColor Cyan
+    Write-Host "  2. Using MSI installer: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/install-sam-cli.html" -ForegroundColor Cyan
+    Write-Host "  3. Using Homebrew (if available): brew install aws-sam-cli" -ForegroundColor Cyan
+    Write-Host ""
+    Write-Host "After installation via pip, you may need to restart your terminal." -ForegroundColor Yellow
+    exit 1
+}
+
+Write-Host "AWS CLI found: $(aws --version)" -ForegroundColor Green
+Write-Host ""
+
+function Deploy-Function {
+    param(
+        [string]$FunctionDir,
+        [string]$FunctionName,
+        [string]$TemplateFile = "template.yaml"
+    )
+    
+    Write-Host ""
+    Write-Host "Deploying $FunctionName..." -ForegroundColor Green
+    Push-Location $FunctionDir
+    
+    try {
+        # Create deployment package
+        if (Test-Path "requirements.txt") {
+            $requirements = Get-Content "requirements.txt" -Raw
+            if ($requirements.Trim()) {
+                Write-Host "Installing dependencies..." -ForegroundColor Yellow
+                pip install -r requirements.txt -t ./package
+                Copy-Item lambda_function.py ./package/
+                Push-Location package
+                Compress-Archive -Path * -DestinationPath ../deployment-package.zip -Force
+                Pop-Location
+                Remove-Item -Recurse -Force package
+            }
+            else {
+                Write-Host "No dependencies, packaging function only..." -ForegroundColor Yellow
+                Compress-Archive -Path lambda_function.py -DestinationPath deployment-package.zip -Force
+            }
+        }
+        else {
+            Write-Host "No dependencies, packaging function only..." -ForegroundColor Yellow
+            Compress-Archive -Path lambda_function.py -DestinationPath deployment-package.zip -Force
+        }
+        
+        # Deploy using SAM
+        Write-Host "Deploying with SAM ($TemplateFile)..." -ForegroundColor Yellow
+        python -m samcli deploy `
+            --template-file $TemplateFile `
+            --stack-name "$FunctionName-stack" `
+            --capabilities CAPABILITY_IAM `
+            --region $Region `
+            --profile $Profile `
+            --resolve-s3 `
+            --no-confirm-changeset `
+            --no-fail-on-empty-changeset
+        
+        # Clean up
+        if (Test-Path deployment-package.zip) {
+            Remove-Item deployment-package.zip -Force
+        }
+        
+        Write-Host "$FunctionName deployed successfully!" -ForegroundColor Green
+    }
+    catch {
+        Write-Host "Error deploying $FunctionName : $_" -ForegroundColor Red
+    }
+    finally {
+        Pop-Location
+    }
+}
+
+# Deploy each function based on architecture type
+if ($ArchitectureType -eq "x86" -or $ArchitectureType -eq "both") {
+    Write-Host ""
+    Write-Host "=== Deploying x86_64 Functions ===" -ForegroundColor Magenta
+    Deploy-Function -FunctionDir "cpu-intensive" -FunctionName "power-tuning-demo-cpu-intensive" -TemplateFile "template.yaml"
+    Deploy-Function -FunctionDir "io-bound" -FunctionName "power-tuning-demo-io-bound" -TemplateFile "template.yaml"
+    Deploy-Function -FunctionDir "network-bound" -FunctionName "power-tuning-demo-network-bound" -TemplateFile "template.yaml"
+    Deploy-Function -FunctionDir "memory-intensive" -FunctionName "power-tuning-demo-memory-intensive" -TemplateFile "template.yaml"
+    Deploy-Function -FunctionDir "simple-api" -FunctionName "power-tuning-demo-simple-api" -TemplateFile "template.yaml"
+}
+
+if ($ArchitectureType -eq "arm64" -or $ArchitectureType -eq "both") {
+    Write-Host ""
+    Write-Host "=== Deploying ARM64 (Graviton2) Functions ===" -ForegroundColor Magenta
+    Deploy-Function -FunctionDir "cpu-intensive" -FunctionName "power-tuning-demo-cpu-intensive-arm64" -TemplateFile "template-arm64.yaml"
+    Deploy-Function -FunctionDir "io-bound" -FunctionName "power-tuning-demo-io-bound-arm64" -TemplateFile "template-arm64.yaml"
+    Deploy-Function -FunctionDir "network-bound" -FunctionName "power-tuning-demo-network-bound-arm64" -TemplateFile "template-arm64.yaml"
+    Deploy-Function -FunctionDir "memory-intensive" -FunctionName "power-tuning-demo-memory-intensive-arm64" -TemplateFile "template-arm64.yaml"
+    Deploy-Function -FunctionDir "simple-api" -FunctionName "power-tuning-demo-simple-api-arm64" -TemplateFile "template-arm64.yaml"
+}
+
+Write-Host ""
+Write-Host "==========================================" -ForegroundColor Cyan
+Write-Host "All functions deployed successfully!" -ForegroundColor Green
+Write-Host "==========================================" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "Next steps:" -ForegroundColor Yellow
+Write-Host "1. Deploy AWS Lambda Power Tuning from AWS Serverless Application Repository"
+Write-Host "2. Run power tuning analysis on each function"
+Write-Host "3. Compare x86_64 vs ARM64 performance and cost"
+Write-Host ""
+Write-Host "Function ARNs:" -ForegroundColor Yellow
+Write-Host "(Run this command manually to list functions:)" -ForegroundColor Gray
+Write-Host "aws lambda list-functions --profile $Profile --region $Region --query" -NoNewline -ForegroundColor Gray
+Write-Host " ""Functions[?starts_with(FunctionName, 'power-tuning-demo')]""" -NoNewline -ForegroundColor Gray
+Write-Host " --output table" -ForegroundColor Gray

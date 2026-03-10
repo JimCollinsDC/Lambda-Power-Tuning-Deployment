@@ -1,0 +1,1 @@
+# No external dependencies required for I/O-bound demo (using urllib from standard library)
