@@ -3,6 +3,10 @@ import time
 from datetime import datetime
 
 
+def _get_request_id(context):
+    return getattr(context, 'aws_request_id', getattr(context, 'request_id', None))
+
+
 def lambda_handler(event, context):
     """
     Simple API Lambda function for power tuning demonstration.
@@ -20,9 +24,9 @@ def lambda_handler(event, context):
             'status': 'healthy',
             'message': 'Simple API Lambda function is running',
             'timestamp': datetime.utcnow().isoformat(),
-            'function_info': {
+                'function_info': {
                 'memory_allocated_mb': context.memory_limit_in_mb,
-                'request_id': context.aws_request_id,
+                'request_id': _get_request_id(context),
                 'remaining_time_ms': context.get_remaining_time_in_millis()
             }
         }

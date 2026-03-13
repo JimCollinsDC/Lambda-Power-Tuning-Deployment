@@ -61,6 +61,6 @@ def lambda_handler(event, context):
             'results': results,
             'execution_time_seconds': round(execution_time, 3),
             'memory_allocated_mb': context.memory_limit_in_mb,
-            'request_id': context.aws_request_id
+            'request_id': getattr(context, 'aws_request_id', getattr(context, 'request_id', None))
         })
     }

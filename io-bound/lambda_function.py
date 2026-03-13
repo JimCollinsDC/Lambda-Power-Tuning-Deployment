@@ -72,7 +72,7 @@ def lambda_handler(event, context):
             },
             'execution_time_seconds': round(execution_time, 3),
             'memory_allocated_mb': context.memory_limit_in_mb,
-            'request_id': context.aws_request_id,
+            'request_id': getattr(context, 'aws_request_id', getattr(context, 'request_id', None)),
             'note': 'I/O-bound functions typically show minimal improvement with higher memory allocation'
         })
     }

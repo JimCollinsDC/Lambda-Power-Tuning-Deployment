@@ -110,7 +110,7 @@ def lambda_handler(event, context):
                 'allocated_mb': context.memory_limit_in_mb,
                 'estimated_dataset_size_mb': round(dataset_size_bytes / (1024 * 1024), 2)
             },
-            'request_id': context.aws_request_id,
+            'request_id': getattr(context, 'aws_request_id', getattr(context, 'request_id', None)),
             'note': 'This function benefits from adequate memory allocation'
         })
     }

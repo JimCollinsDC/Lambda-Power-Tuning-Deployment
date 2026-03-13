@@ -144,7 +144,7 @@ def lambda_handler(event, context):
                 'memory_allocated_mb': memory_mb,
                 'estimated_vcpu': vcpu_count,
                 'vcpu_note': '2 full vCPUs available at 1769+ MB',
-                'request_id': context.aws_request_id
+                'request_id': getattr(context, 'aws_request_id', getattr(context, 'request_id', None))
             },
             'note': 'This function benefits from 2 vCPUs for parallel network I/O + CPU processing',
             'sample_results': results[:3]  # First 3 results as sample
