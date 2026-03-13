@@ -14,7 +14,7 @@ Resources:
         - arm64
       Description: CPU-intensive function (ARM64/Graviton2) for Lambda Power Tuning demonstration
       MemorySize: 512
-      Timeout: 30
+      Timeout: 120
       Environment:
         Variables:
           FUNCTION_TYPE: cpu-intensive

@@ -12,7 +12,7 @@ Resources:
       CodeUri: .
       Description: CPU-intensive function for Lambda Power Tuning demonstration
       MemorySize: 512
-      Timeout: 30
+      Timeout: 120
       Environment:
         Variables:
           FUNCTION_TYPE: cpu-intensive
